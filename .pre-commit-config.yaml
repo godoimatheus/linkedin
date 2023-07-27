@@ -31,7 +31,6 @@ repos:
       hooks:
         - id: pyinstaller
           name: pyinstaller
-          entry: bash -c 'pyinstaller src/bot_linkedin.py'
+          entry: bash -c 'pyinstaller -y src/bot_linkedin.py'
           language: system
           stages: [commit]
-          
