@@ -34,3 +34,4 @@ repos:
           entry: bash -c 'pyinstaller src/bot_linkedin.py'
           language: system
           stages: [commit]
+          
