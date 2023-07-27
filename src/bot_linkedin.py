@@ -4,23 +4,23 @@ from urllib import parse
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from PySimpleGUI import PySimpleGUI as sg
 
-driver = None
+DRIVER = None
 conection_level = None
 
 
 def bot_linkedin():
-    global driver, conection_level
+    global DRIVER, conection_level
     email = values["email"]
     password = values["senha"]
     search = values["profissao"]
@@ -45,36 +45,36 @@ def bot_linkedin():
     print("Verificando atualizações")
     # abrir navegador
     if values["chrome"]:
-        driver = webdriver.Chrome(
+        DRIVER = webdriver.Chrome(
             service=ChromeService(ChromeDriverManager().install())
         )
     elif values["edge"]:
-        driver = webdriver.Edge(
+        DRIVER = webdriver.Edge(
             service=EdgeService(EdgeChromiumDriverManager().install())
         )
     elif values["firefox"]:
-        driver = webdriver.Firefox(
+        DRIVER = webdriver.Firefox(
             service=FirefoxService(GeckoDriverManager().install())
         )
     # navegador.maximize_window()
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(DRIVER, 10)
     print("Acessando linkedin.com")
-    driver.get("https://www.linkedin.com/")
+    DRIVER.get("https://www.linkedin.com/")
     print("Realizando login...")
     email_box = wait.until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="session_key"]'))
     )
     email_box.send_keys(email)
-    driver.find_element(By.XPATH, '//*[@id="session_password"]').send_keys(password)
-    driver.find_element(By.XPATH, '//*[@id="session_password"]').send_keys(Keys.ENTER)
+    DRIVER.find_element(By.XPATH, '//*[@id="session_password"]').send_keys(password)
+    DRIVER.find_element(By.XPATH, '//*[@id="session_password"]').send_keys(Keys.ENTER)
     sleep(1)
     print("Checando se existe captcha")
 
     # checar url
-    current_url = driver.current_url
+    current_url = DRIVER.current_url
     if "checkpoint" in current_url:
         while True:
-            current_url = driver.current_url
+            current_url = DRIVER.current_url
             print("Resolva o captcha para prosseguir")
             if "checkpoint" not in current_url:
                 break
@@ -82,15 +82,15 @@ def bot_linkedin():
     # remover solicitacoes
     if values["tirarConexao"]:
         print("Removendo conexões")
-        driver.get("https://www.linkedin.com/mynetwork/invitation-manager/sent/")
+        DRIVER.get("https://www.linkedin.com/mynetwork/invitation-manager/sent/")
         sleep(5)
-        remove_button = driver.find_elements(By.CLASS_NAME, "artdeco-button__text")
+        remove_button = DRIVER.find_elements(By.CLASS_NAME, "artdeco-button__text")
         remove_count = 0
         for b in remove_button:
             if b.text == "Retirar":
                 b.click()
                 sleep(0.7)
-                confirm = driver.find_element(
+                confirm = DRIVER.find_element(
                     By.XPATH, "/html/body/div[3]/div/div/div[3]/button[2]/span"
                 )
                 confirm.click()
@@ -104,17 +104,17 @@ def bot_linkedin():
     sleep(1)
     print("Página de resultados da pesquisa de pessoas")
     search_page = f"https://www.linkedin.com/search/results/people/?keywords={formated_search}&network={conection_level}&origin=SWITCH_SEARCH_VERTICAL"
-    driver.get(search_page)
+    DRIVER.get(search_page)
 
     # filtrar por local
     sleep(5)
-    filter_button = driver.find_elements(By.TAG_NAME, "button")
+    filter_button = DRIVER.find_elements(By.TAG_NAME, "button")
     print("Selecionando cidade/estado/país")
     for button in filter_button:
         if button.text == "Localidades":
             button.click()
             # sleep(1)
-            city_search = driver.find_element(
+            city_search = DRIVER.find_element(
                 By.XPATH,
                 '//*[@id="artdeco-hoverable-artdeco-gen-43"]/div['
                 "1]/div/form/fieldset/div[1]/div/div/input",
@@ -123,7 +123,7 @@ def bot_linkedin():
             sleep(1)
             city_search.send_keys(Keys.ARROW_DOWN)
             city_search.send_keys(Keys.ENTER)
-            search_results = driver.find_element(
+            search_results = DRIVER.find_element(
                 By.XPATH,
                 "/html/body/div[4]/div[3]/div[2]/section/div/nav/div/ul/li[4]/div/div/div/div[1]/div/form/fieldset/div[2]/button[2]/span",
             )
@@ -145,34 +145,34 @@ def bot_linkedin():
         page += 1
         sleep(1)
         print(f"Página {page}")
-        current_url = driver.current_url
-        driver.get(f"{current_url}&page={page}")
+        current_url = DRIVER.current_url
+        DRIVER.get(f"{current_url}&page={page}")
 
         # conectar
         sleep(5)
-        conection_button = driver.find_elements(By.CLASS_NAME, "artdeco-button__text")
+        conection_button = DRIVER.find_elements(By.CLASS_NAME, "artdeco-button__text")
         for button in conection_button:
             if button.text == "Conectar":
                 button.click()
                 try:
                     # pegar nome
                     sleep(1)
-                    name = driver.find_element(By.TAG_NAME, "strong")
+                    name = DRIVER.find_element(By.TAG_NAME, "strong")
                     full_name = name.text
                     separate_name = full_name.split(" ")
                     first_name = separate_name[0].capitalize()
 
                     # add msg
-                    note_add = driver.find_element(
+                    note_add = DRIVER.find_element(
                         By.XPATH, "/html/body/div[3]/div/div/div[3]/button[1]"
                     )
                     note_add.click()
                     sleep(1)
-                    text_area = driver.find_element(By.ID, "custom-message")
+                    text_area = DRIVER.find_element(By.ID, "custom-message")
                     note = f"{salute}, {first_name}, tudo bem? {msg}"
                     text_area.send_keys(note)
                     sleep(1)
-                    send_button = driver.find_element(
+                    send_button = DRIVER.find_element(
                         By.XPATH, "/html/body/div[3]/div/div/div[3]/button[2]/span"
                     )
                     send_button.click()
@@ -191,7 +191,7 @@ def bot_linkedin():
             break
     sleep(1)
     print("Fechando o navegador")
-    driver.quit()
+    DRIVER.quit()
     print("FIM")
     print()
     print("https://github.com/godoimatheus")
@@ -272,7 +272,7 @@ while True:
     if events == "PARAR":
         try:
             print("Fechando o navegador")
-            driver.quit()
+            DRIVER.quit()
         except:
             pass
 
