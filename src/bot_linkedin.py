@@ -16,11 +16,11 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from PySimpleGUI import PySimpleGUI as sg
 
 DRIVER = None
-conection_level = None
+CONECTION_LEVEL = None
 
 
 def bot_linkedin():
-    global DRIVER, conection_level
+    global DRIVER, CONECTION_LEVEL
     email = values["email"]
     password = values["senha"]
     search = values["profissao"]
@@ -28,11 +28,11 @@ def bot_linkedin():
     msg = values["mensagem"]
     conection_limit = int(values["quantidade"])
     if values["todosGrau"]:
-        conection_level = '%5B"S"%2C"O"%5D'
+        CONECTION_LEVEL = '%5B"S"%2C"O"%5D'
     elif values["segundoGrau"]:
-        conection_level = '%5B"S"%5D'
+        CONECTION_LEVEL = '%5B"S"%5D'
     elif values["terceiroGrau"]:
-        conection_level = '%5B"O"%5D'
+        CONECTION_LEVEL = '%5B"O"%5D'
     city = values["cep"]
     current_time = int(datetime.now().strftime("%H"))
     if current_time >= 18:
@@ -84,11 +84,11 @@ def bot_linkedin():
         print("Removendo conexões")
         DRIVER.get("https://www.linkedin.com/mynetwork/invitation-manager/sent/")
         sleep(5)
-        remove_button = DRIVER.find_elements(By.CLASS_NAME, "artdeco-button__text")
+        remove_buttons = DRIVER.find_elements(By.CLASS_NAME, "artdeco-button__text")
         remove_count = 0
-        for b in remove_button:
-            if b.text == "Retirar":
-                b.click()
+        for remove_button in remove_buttons:
+            if remove_button.text == "Retirar":
+                remove_button.click()
                 sleep(0.7)
                 confirm = DRIVER.find_element(
                     By.XPATH, "/html/body/div[3]/div/div/div[3]/button[2]/span"
@@ -103,7 +103,8 @@ def bot_linkedin():
 
     sleep(1)
     print("Página de resultados da pesquisa de pessoas")
-    search_page = f"https://www.linkedin.com/search/results/people/?keywords={formated_search}&network={conection_level}&origin=SWITCH_SEARCH_VERTICAL"
+    search_page = (f"https://www.linkedin.com/search/results/people/?keywords={formated_search}"
+                   f"&network{CONECTION_LEVEL}&origin=SWITCH_SEARCH_VERTICAL")
     DRIVER.get(search_page)
 
     # filtrar por local
@@ -125,7 +126,8 @@ def bot_linkedin():
             city_search.send_keys(Keys.ENTER)
             search_results = DRIVER.find_element(
                 By.XPATH,
-                "/html/body/div[4]/div[3]/div[2]/section/div/nav/div/ul/li[4]/div/div/div/div[1]/div/form/fieldset/div[2]/button[2]/span",
+                "/html/body/div[4]/div[3]/div[2]/section/div/nav/div/ul/li[4]/"
+                "div/div/div/div[1]/div/form/fieldset/div[2]/button[2]/span",
             )
             wait.until(
                 EC.element_to_be_clickable(search_results)
@@ -135,8 +137,7 @@ def bot_linkedin():
             sleep(1)
             print(f"{city} selecionado para pesquisa")
             break
-        else:
-            continue
+        continue
     print("Buscando conectar")
     count = 0
     page = 0
