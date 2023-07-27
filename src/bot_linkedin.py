@@ -10,6 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
@@ -103,8 +104,10 @@ def bot_linkedin():
 
     sleep(1)
     print("Página de resultados da pesquisa de pessoas")
-    search_page = (f"https://www.linkedin.com/search/results/people/?keywords={formated_search}"
-                   f"&network{CONECTION_LEVEL}&origin=SWITCH_SEARCH_VERTICAL")
+    search_page = (
+        f"https://www.linkedin.com/search/results/people/?keywords={formated_search}"
+        f"&network{CONECTION_LEVEL}&origin=SWITCH_SEARCH_VERTICAL"
+    )
     DRIVER.get(search_page)
 
     # filtrar por local
@@ -179,13 +182,13 @@ def bot_linkedin():
                     send_button.click()
                     print(f"Conectar com {first_name}...")
                     count += 1
-                except:
+                except NoSuchElementException:
                     pass
                 print(f"Número de conexão atual: {count}")
                 if count == conection_limit:
                     print("Chegou a limite definido")
                     break
-            elif button.text == "Pendente" or "Seguindo" or "Enviar mensagem":
+            elif button.text in ["Pendente", "Seguindo", "Enviar mensagem"]:
                 continue
         if page == 100:
             print("Chegamos a última página, inicie a pesquisa novamente")
@@ -274,7 +277,7 @@ while True:
         try:
             print("Fechando o navegador")
             DRIVER.quit()
-        except:
+        except NoSuchWindowException:
             pass
 
     if events == "INICIAR":
